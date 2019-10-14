@@ -57,7 +57,7 @@ def calc_all_distances(xi, data, columns):
     return distances
 
 
-def predict_knn(xi, data,columns, target_column, k):
+def predict_knn(xi, data, columns, target_column, k):
     """
     Predicts the label for a given point by taking votes from its k-nearest neigbors
     
