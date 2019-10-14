@@ -8,6 +8,7 @@ Created on Sun Oct 13 19:07:16 2019
 import math
 import pandas as pd
 from collections import Counter
+import matplotlib.pyplot as plt
 
 #Calculate Euclidean distance:
 def euclidean_dist(xi,xj):
@@ -79,9 +80,61 @@ def predict_knn(xi, data,columns, target_column, k):
     poll = Counter(k_nearest_labels)
     return poll.most_common()[0][0]
 
-
+def predict_all(data, columns, target_column, k):
+    """
+    Predicts a label for each point in the data set, by looking at its k-nearest neighbors
+    
+    Parameters:
+        data         : Pandas dataframe with the training data.
+                       Each row will represent a point in the N-dimensional space.
+        columns      : A list of the columns names to take as the dimensions of the Euclidean space. 
+        target_column: The name of the target feature
+        k            : The number of nearest neighbors to take into account
+        
+    Returns:
+        predictions (list): the predicted labels for all the points
+    """
+    
+    predictions = list()
+    for row in data.itertuples():
+        dict_row = row._asdict()
+        xi = list()
+        for col in columns:
+            xi.append(dict_row[col])
+        predictions.append(predict_knn(xi, 
+                                       data.drop(index=row.Index), 
+                                       columns, 
+                                       target_column, 
+                                       k))
+    return predictions
+    
+def accuracy(true_label,predicted_label):
+    """
+    Calculates the accuracy for a model
+    
+    Parameters:
+        true_label      : a list or series with the true labels of the points
+        predicted_label : a list or series with the predicted label of the points
+    
+    Returns:
+        accuracy: the accuracy score for the model
+        
+    """
+    return sum(true_label == predicted_label)/len(true_label)
+    
+    
 iris_data = pd.read_csv('IRIS.csv')
 feature_columns = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
 target_column = 'species'
 
-predict_knn((2,1,1,0),iris_data,feature_columns, target_column,3)
+accuracies = list()
+ks = [k for k in range(1,22)]
+for k in ks:
+    accuracies.append(accuracy(iris_data.loc[:,target_column],
+                                  predict_all(iris_data,feature_columns, target_column,k)))
+    print('\r{0} Done'.format(k), end='')        
+    
+
+plt.clf()
+plt.plot(ks,accuracies, 'go')  # green dots
+plt.show()
